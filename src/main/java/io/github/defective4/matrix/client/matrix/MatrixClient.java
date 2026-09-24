@@ -1,5 +1,6 @@
 package io.github.defective4.matrix.client.matrix;
 
+import java.net.URL;
 import java.util.Random;
 
 import io.github.defective4.matrix.client.http.HttpClient;
@@ -9,8 +10,8 @@ public class MatrixClient {
     private final HttpClient client;
     private final Random random = new Random();
 
-    public MatrixClient(HttpClient client) {
-        this.client = client;
+    public MatrixClient(URL baseURL, char[] token) {
+        client = new HttpClient(baseURL, token);
     }
 
     public HttpClient getHttpClient() {
