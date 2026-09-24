@@ -1,0 +1,6 @@
+/target/
+/service
+/.classpath
+/.project
+/.settings
+Main.java
