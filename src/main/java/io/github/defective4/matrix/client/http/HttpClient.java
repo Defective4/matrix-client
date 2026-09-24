@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -34,17 +35,25 @@ public class HttpClient {
 
     public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method)
             throws MalformedURLException, IOException {
+        return makeRequest(path, body, type, method, null);
+    }
+
+    public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method,
+            Consumer<HttpURLConnection> connectionModifier) throws MalformedURLException, IOException {
         HttpURLConnection connection = (HttpURLConnection) URI.create(baseURL + "/_matrix" + path).toURL()
                 .openConnection();
+        if (connectionModifier != null) connectionModifier.accept(connection);
         try {
             connection.setRequestMethod(method.name());
-            connection.setRequestProperty("Content-Type", "application/json");
             if (token != null) {
                 connection.setRequestProperty("Authorization", "Bearer %s".formatted(new String(token)));
             }
-            connection.setDoOutput(true);
-            try (Writer writer = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8)) {
-                writer.write(gson.toJson(body));
+            if (method != HTTPMethod.GET) {
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+                try (Writer writer = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8)) {
+                    writer.write(gson.toJson(body));
+                }
             }
 
             try (Reader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
