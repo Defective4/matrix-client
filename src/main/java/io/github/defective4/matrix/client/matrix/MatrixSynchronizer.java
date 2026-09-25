@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import io.github.defective4.matrix.client.http.HTTPMethod;
 import io.github.defective4.matrix.client.matrix.entity.EventRelationship;
 import io.github.defective4.matrix.client.matrix.entity.Room;
+import io.github.defective4.matrix.client.matrix.entity.message.MediaMessage;
 import io.github.defective4.matrix.client.matrix.entity.message.Message;
 import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
@@ -53,8 +54,8 @@ public class MatrixSynchronizer {
                 : "full_state=false&since=%s".formatted(URLEncoder.encode(since, StandardCharsets.UTF_8));
         JsonObject obj = matrixClient.makeRequest("/sync?%s&timeout=%s".formatted(stateQuery, syncInterval * 1000),
                 null, JsonObject.class, HTTPMethod.GET, con -> con.setReadTimeout(Integer.MAX_VALUE));
-//         System.out.println(obj);
-//         System.err.println();
+//        System.out.println(obj);
+//        System.err.println();
         return matrixClient.client.getGson().fromJson(obj, SyncResponse.class);
     }
 
@@ -95,6 +96,7 @@ public class MatrixSynchronizer {
                 String msgtype = content.get("msgtype").getAsString();
                 Class<? extends Message> messageClass = switch (msgtype) {
                     case TextMessage.TYPE -> TextMessage.class;
+                    case MediaMessage.TYPE_IMAGE, MediaMessage.TYPE_VIDEO -> MediaMessage.class;
                     default -> Message.class;
                 };
                 Message message = event.getContentAs(messageClass, client.getHttpClient().getGson());
