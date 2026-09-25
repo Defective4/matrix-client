@@ -26,7 +26,8 @@ import io.github.defective4.matrix.client.matrix.entity.user.User;
 import io.github.defective4.matrix.client.matrix.event.ClientEvent;
 import io.github.defective4.matrix.client.matrix.event.EventListener;
 import io.github.defective4.matrix.client.matrix.event.MemberEvent;
-import io.github.defective4.matrix.client.matrix.model.SyncResponse;
+import io.github.defective4.matrix.client.matrix.model.request.CreateRoomRequest;
+import io.github.defective4.matrix.client.matrix.model.response.SyncResponse;
 
 public class MatrixClient {
     private final HttpClient client;
@@ -53,6 +54,13 @@ public class MatrixClient {
         connected = true;
     }
 
+    public Room createRoom(String name, Room.Visibility visibility, String topic) throws IOException {
+        return new Room(this,
+                makeRequest("/createRoom",
+                        new CreateRoomRequest(visibility.name().toLowerCase(), name, topic, List.of(), false),
+                        JsonObject.class, HTTPMethod.POST).get("room_id").getAsString());
+    }
+
     public HttpClient getHttpClient() {
         return client;
     }
@@ -71,6 +79,10 @@ public class MatrixClient {
 
     public User getSelfUser() {
         return selfUser;
+    }
+
+    public User getUserById(String id) {
+        return new User(this, id);
     }
 
     public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method)

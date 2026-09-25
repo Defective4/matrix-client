@@ -6,8 +6,8 @@ import java.net.URL;
 
 import io.github.defective4.matrix.client.http.HTTPMethod;
 import io.github.defective4.matrix.client.http.HttpClient;
-import io.github.defective4.matrix.client.matrix.model.AuthResponse;
-import io.github.defective4.matrix.client.matrix.model.LoginRequest;
+import io.github.defective4.matrix.client.matrix.model.request.LoginRequest;
+import io.github.defective4.matrix.client.matrix.model.response.AuthResponse;
 
 public class MatrixAuthenticator {
     private final HttpClient client;

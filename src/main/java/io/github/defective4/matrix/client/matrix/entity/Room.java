@@ -8,9 +8,16 @@ import io.github.defective4.matrix.client.http.HTTPMethod;
 import io.github.defective4.matrix.client.matrix.MatrixClient;
 import io.github.defective4.matrix.client.matrix.entity.message.Message;
 import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
+import io.github.defective4.matrix.client.matrix.entity.user.User;
 import io.github.defective4.matrix.client.matrix.model.JsonVoid;
+import io.github.defective4.matrix.client.matrix.model.request.RoomInviteRequest;
 
 public class Room extends Entity {
+
+    public enum Visibility {
+        PRIVATE, PUBLIC;
+    }
+
     public static final String M_ROOM_MEMBER = "m.room.member";
     public static final String M_ROOM_MESSAGE = "m.room.message";
     private final String id;
@@ -22,6 +29,11 @@ public class Room extends Entity {
 
     public String getId() {
         return id;
+    }
+
+    public void invite(User user, String reason) throws IOException {
+        client.makeRequest("/rooms/%s/invite".formatted(getURLEncodedID()), new RoomInviteRequest(user.getId(), reason),
+                JsonVoid.class, HTTPMethod.POST);
     }
 
     public void join() throws IOException {
