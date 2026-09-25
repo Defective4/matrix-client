@@ -4,17 +4,28 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.google.gson.JsonObject;
 
 import io.github.defective4.matrix.client.http.HTTPMethod;
 import io.github.defective4.matrix.client.http.HttpClient;
 import io.github.defective4.matrix.client.matrix.entity.Room;
+import io.github.defective4.matrix.client.matrix.entity.message.Message;
+import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
+import io.github.defective4.matrix.client.matrix.entity.user.User;
+import io.github.defective4.matrix.client.matrix.event.EventListener;
 import io.github.defective4.matrix.client.matrix.model.SyncResponse;
 
 public class MatrixClient {
     private final HttpClient client;
+    private final List<EventListener> listeners = new CopyOnWriteArrayList<>();
     private final Random random = new Random();
     private final int syncInterval = 30;
     private final ExecutorService syncService = Executors.newFixedThreadPool(1);
@@ -24,8 +35,16 @@ public class MatrixClient {
         client = new HttpClient(baseURL, token);
     }
 
+    public boolean addListener(EventListener listener) {
+        return listeners.add(Objects.requireNonNull(listener));
+    }
+
     public HttpClient getHttpClient() {
         return client;
+    }
+
+    public List<EventListener> getListeners() {
+        return Collections.unmodifiableList(listeners);
     }
 
     public Random getRandom() {
@@ -36,12 +55,36 @@ public class MatrixClient {
         return new Room(this, id);
     }
 
+    public boolean removeListener(EventListener listener) {
+        return listeners.remove(listener);
+    }
+
     public void startSyncThread() {
         syncService.submit(() -> {
             while (true) {
                 try {
                     SyncResponse response = sync(syncSince);
-                    System.out.println(response);
+                    if (syncSince != null) {
+                        response.rooms().join().forEach((roomId, join) -> {
+                            join.timeline().events().forEach(event -> {
+                                User sender = new User(this, event.sender());
+                                Room room = new Room(this, roomId);
+                                switch (event.type()) {
+                                    case Room.M_ROOM_MESSAGE -> {
+                                        JsonObject content = event.content();
+                                        String msgtype = content.get("msgtype").getAsString();
+                                        Class<? extends Message> messageClass = switch (msgtype) {
+                                            case TextMessage.TYPE -> TextMessage.class;
+                                            default -> Message.class;
+                                        };
+                                        Message message = event.getContentAs(messageClass, client.getGson());
+                                        listeners.forEach(ls -> ls.messageReceived(sender, room, message));
+                                    }
+                                    default -> {}
+                                }
+                            });
+                        });
+                    }
                     syncSince = response.nextBatch();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -55,7 +98,8 @@ public class MatrixClient {
     public SyncResponse sync(String since) throws IOException {
         String stateQuery = since == null ? "full_state=true"
                 : "full_state=false&since=%s".formatted(URLEncoder.encode(since, StandardCharsets.UTF_8));
-        return client.makeRequest("/client/v3/sync?%s&timeout=%s".formatted(stateQuery, syncInterval * 1000), null,
-                SyncResponse.class, HTTPMethod.GET, con -> con.setReadTimeout(Integer.MAX_VALUE));
+        JsonObject obj = client.makeRequest("/client/v3/sync?%s&timeout=%s".formatted(stateQuery, syncInterval * 1000),
+                null, JsonObject.class, HTTPMethod.GET, con -> con.setReadTimeout(Integer.MAX_VALUE));
+        return client.getGson().fromJson(obj, SyncResponse.class);
     }
 }

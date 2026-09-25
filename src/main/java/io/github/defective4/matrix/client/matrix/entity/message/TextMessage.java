@@ -13,4 +13,10 @@ public class TextMessage extends Message {
     public String getBody() {
         return body;
     }
+
+    @Override
+    public String toString() {
+        return "TextMessage [body=" + body + "]";
+    }
+
 }

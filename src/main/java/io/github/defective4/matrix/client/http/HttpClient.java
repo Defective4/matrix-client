@@ -33,6 +33,10 @@ public class HttpClient {
         this.token = token;
     }
 
+    public Gson getGson() {
+        return gson;
+    }
+
     public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method)
             throws MalformedURLException, IOException {
         return makeRequest(path, body, type, method, null);
