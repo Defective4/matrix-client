@@ -34,7 +34,7 @@ public class Room extends Entity {
     public void sendRoomEvent(String eventType, Object event) throws IOException {
         String url = "/client/v3/rooms/%s/send/%s/%s".formatted(URLEncoder.encode(id, StandardCharsets.UTF_8),
                 eventType, client.getRandom().nextLong());
-        client.getHttpClient().makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
+        client.makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
     }
 
     @Override
