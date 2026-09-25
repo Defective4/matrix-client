@@ -18,8 +18,9 @@ import io.github.defective4.matrix.client.matrix.entity.message.Message;
 import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
 import io.github.defective4.matrix.client.matrix.event.ClientEvent;
-import io.github.defective4.matrix.client.matrix.event.EventListener;
 import io.github.defective4.matrix.client.matrix.event.MemberEvent;
+import io.github.defective4.matrix.client.matrix.event.MessageEvent;
+import io.github.defective4.matrix.client.matrix.event.listener.EventListener;
 import io.github.defective4.matrix.client.matrix.model.response.SyncResponse;
 
 public class MatrixSynchronizer {
@@ -56,15 +57,15 @@ public class MatrixSynchronizer {
     }
 
     void handleInviteEvent(String roomId, ClientEvent event) {
-        User sender = new User(client, event.sender());
+        User sender = new User(client, event.getSenderId());
         if (sender.isSelf()) return;
         Room room = new Room(client, roomId);
-        switch (event.type()) {
+        switch (event.getType()) {
             case Room.M_ROOM_MEMBER -> {
                 MemberEvent memberEvent = event.getContentAs(MemberEvent.class, client.getHttpClient().getGson());
                 switch (memberEvent.membership()) {
                     case MemberEvent.INVITE -> {
-                        User invited = new User(client, event.stateKey());
+                        User invited = new User(client, event.getStateKey());
                         listeners.forEach(ls -> ls.userInvited(room, sender, invited));
                     }
                     default -> {}
@@ -75,19 +76,20 @@ public class MatrixSynchronizer {
     }
 
     void handleRoomEvent(String roomId, ClientEvent event) {
-        User sender = new User(client, event.sender());
+        User sender = new User(client, event.getSenderId());
         if (sender.isSelf()) return;
         Room room = new Room(client, roomId);
-        switch (event.type()) {
+        switch (event.getType()) {
             case Room.M_ROOM_MESSAGE -> {
-                JsonObject content = event.content();
+                JsonObject content = event.getContent();
                 String msgtype = content.get("msgtype").getAsString();
                 Class<? extends Message> messageClass = switch (msgtype) {
                     case TextMessage.TYPE -> TextMessage.class;
                     default -> Message.class;
                 };
                 Message message = event.getContentAs(messageClass, client.getHttpClient().getGson());
-                listeners.forEach(ls -> ls.messageReceived(event, sender, room, message));
+                MessageEvent me = new MessageEvent(event, room, message, client);
+                listeners.forEach(ls -> ls.messageReceived(me));
             }
             default -> {}
         }

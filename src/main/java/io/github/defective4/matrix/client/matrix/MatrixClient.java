@@ -14,7 +14,7 @@ import io.github.defective4.matrix.client.http.HTTPMethod;
 import io.github.defective4.matrix.client.http.HttpClient;
 import io.github.defective4.matrix.client.matrix.entity.Room;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
-import io.github.defective4.matrix.client.matrix.event.EventListener;
+import io.github.defective4.matrix.client.matrix.event.listener.EventListener;
 import io.github.defective4.matrix.client.matrix.model.request.CreateRoomRequest;
 
 public class MatrixClient {

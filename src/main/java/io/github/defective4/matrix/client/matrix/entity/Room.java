@@ -11,6 +11,7 @@ import io.github.defective4.matrix.client.matrix.MatrixClient;
 import io.github.defective4.matrix.client.matrix.entity.message.Message;
 import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
+import io.github.defective4.matrix.client.matrix.event.ClientEvent;
 import io.github.defective4.matrix.client.matrix.model.JsonVoid;
 import io.github.defective4.matrix.client.matrix.model.request.RoomInviteRequest;
 
@@ -43,10 +44,10 @@ public class Room extends Entity {
                 HTTPMethod.POST);
     }
 
-    public void react(String event, String emoji) throws IOException {
+    public void react(ClientEvent event, String emoji) throws IOException {
         JsonObject root = new JsonObject();
         root.add(EventRelationship.KEY, client.getHttpClient().getGson()
-                .toJsonTree(new EventRelationship(event, emoji, EventRelationship.REL_TYPE_ANNOTATION)));
+                .toJsonTree(new EventRelationship(event.getEventId(), emoji, EventRelationship.REL_TYPE_ANNOTATION)));
         sendRoomEvent(EventRelationship.M_REACTION, root);
     }
 
