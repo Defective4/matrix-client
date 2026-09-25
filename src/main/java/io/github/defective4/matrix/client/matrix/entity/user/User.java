@@ -21,9 +21,13 @@ public class User extends Entity {
     }
 
     public Room createPrivateChat() throws IOException {
-        return new Room(client, client.makeRequest("/createRoom",
-                new CreateRoomRequest(Room.Visibility.PRIVATE.name().toLowerCase(), null, null, List.of(id), true),
-                JsonObject.class, HTTPMethod.POST).get("room_id").getAsString());
+        return new Room(
+                client, client
+                        .makeRequest("/createRoom",
+                                new CreateRoomRequest(Room.Visibility.PRIVATE.name().toLowerCase(), null, null,
+                                        List.of(id), true),
+                                JsonObject.class, HTTPMethod.POST)
+                        .get("room_id").getAsString());
     }
 
     public String getId() {

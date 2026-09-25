@@ -114,13 +114,7 @@ public class MatrixClient {
                 switch (memberEvent.membership()) {
                     case MemberEvent.INVITE -> {
                         User invited = new User(this, event.stateKey());
-                        listeners.forEach(ls -> {
-                            try {
-                                ls.userInvited(room, sender, invited);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        });
+                        listeners.forEach(ls -> ls.userInvited(room, sender, invited));
                     }
                     default -> {}
                 }
@@ -142,7 +136,7 @@ public class MatrixClient {
                     default -> Message.class;
                 };
                 Message message = event.getContentAs(messageClass, client.getGson());
-                listeners.forEach(ls -> ls.messageReceived(sender, room, message));
+                listeners.forEach(ls -> ls.messageReceived(event, sender, room, message));
             }
             default -> {}
         }

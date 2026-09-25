@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import com.google.gson.JsonObject;
+
 import io.github.defective4.matrix.client.http.HTTPMethod;
 import io.github.defective4.matrix.client.matrix.MatrixClient;
 import io.github.defective4.matrix.client.matrix.entity.message.Message;
@@ -39,6 +41,13 @@ public class Room extends Entity {
     public void join() throws IOException {
         client.makeRequest("/rooms/%s/join".formatted(getURLEncodedID()), new JsonVoid(), JsonVoid.class,
                 HTTPMethod.POST);
+    }
+
+    public void react(String event, String emoji) throws IOException {
+        JsonObject root = new JsonObject();
+        root.add(EventRelationship.KEY, client.getHttpClient().getGson()
+                .toJsonTree(new EventRelationship(event, emoji, EventRelationship.REL_TYPE_ANNOTATION)));
+        sendRoomEvent(EventRelationship.M_REACTION, root);
     }
 
     public void sendMessage(Message message) throws IOException {
