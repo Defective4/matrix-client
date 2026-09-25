@@ -13,7 +13,7 @@ import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
 import io.github.defective4.matrix.client.matrix.event.ClientEvent;
 import io.github.defective4.matrix.client.matrix.model.JsonVoid;
-import io.github.defective4.matrix.client.matrix.model.request.RoomInviteRequest;
+import io.github.defective4.matrix.client.matrix.model.request.RoomRequest;
 
 public class Room extends Entity {
 
@@ -30,18 +30,28 @@ public class Room extends Entity {
         this.id = id;
     }
 
+    public void ban(User user, String reason) throws IOException {
+        client.makeRequest("/rooms/%s/ban".formatted(getURLEncodedID()), new RoomRequest(user.getId(), reason),
+                JsonVoid.class, HTTPMethod.POST);
+    }
+
     public String getId() {
         return id;
     }
 
     public void invite(User user, String reason) throws IOException {
-        client.makeRequest("/rooms/%s/invite".formatted(getURLEncodedID()), new RoomInviteRequest(user.getId(), reason),
+        client.makeRequest("/rooms/%s/invite".formatted(getURLEncodedID()), new RoomRequest(user.getId(), reason),
                 JsonVoid.class, HTTPMethod.POST);
     }
 
     public void join() throws IOException {
         client.makeRequest("/rooms/%s/join".formatted(getURLEncodedID()), new JsonVoid(), JsonVoid.class,
                 HTTPMethod.POST);
+    }
+
+    public void kick(User user, String reason) throws IOException {
+        client.makeRequest("/rooms/%s/kick".formatted(getURLEncodedID()), new RoomRequest(user.getId(), reason),
+                JsonVoid.class, HTTPMethod.POST);
     }
 
     public void leave(String reason) throws IOException {
@@ -74,6 +84,11 @@ public class Room extends Entity {
     @Override
     public String toString() {
         return "Room [id=" + id + "]";
+    }
+
+    public void unban(User user, String reason) throws IOException {
+        client.makeRequest("/rooms/%s/unban".formatted(getURLEncodedID()), new RoomRequest(user.getId(), reason),
+                JsonVoid.class, HTTPMethod.POST);
     }
 
     private String getURLEncodedID() {
