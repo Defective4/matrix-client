@@ -16,6 +16,10 @@ public class User extends Entity {
         return id;
     }
 
+    public boolean isSelf() {
+        return this == client.getSelfUser() || id.equals(client.getSelfUser().id);
+    }
+
     @Override
     public String toString() {
         return "User [id=" + id + "]";

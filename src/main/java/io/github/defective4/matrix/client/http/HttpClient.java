@@ -44,7 +44,7 @@ public class HttpClient {
 
     public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method,
             Consumer<HttpURLConnection> connectionModifier) throws MalformedURLException, IOException {
-        HttpURLConnection connection = (HttpURLConnection) URI.create(baseURL + "/_matrix" + path).toURL()
+        HttpURLConnection connection = (HttpURLConnection) URI.create(baseURL + "/_matrix/client/v3" + path).toURL()
                 .openConnection();
         if (connectionModifier != null) connectionModifier.accept(connection);
         try {

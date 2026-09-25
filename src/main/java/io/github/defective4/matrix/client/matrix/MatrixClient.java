@@ -85,16 +85,16 @@ public class MatrixClient {
     public SyncResponse sync(String since) throws IOException {
         String stateQuery = since == null ? "full_state=true"
                 : "full_state=false&since=%s".formatted(URLEncoder.encode(since, StandardCharsets.UTF_8));
-        JsonObject obj = makeRequest("/client/v3/sync?%s&timeout=%s".formatted(stateQuery, syncInterval * 1000), null,
+        JsonObject obj = makeRequest("/sync?%s&timeout=%s".formatted(stateQuery, syncInterval * 1000), null,
                 JsonObject.class, HTTPMethod.GET, con -> con.setReadTimeout(Integer.MAX_VALUE));
 //        System.out.println(obj);
 //        System.err.println();
         return client.getGson().fromJson(obj, SyncResponse.class);
     }
 
-    private void handleRoomEvent(String roomId, ClientEvent event) {
+    private void handleInviteEvent(String roomId, ClientEvent event) {
         User sender = new User(this, event.sender());
-        if (sender.getId().equals(selfUser.getId())) return;
+        if (sender.isSelf()) return;
         Room room = new Room(this, roomId);
         switch (event.type()) {
             case Room.M_ROOM_MEMBER -> {
@@ -102,11 +102,26 @@ public class MatrixClient {
                 switch (memberEvent.membership()) {
                     case MemberEvent.INVITE -> {
                         User invited = new User(this, event.stateKey());
-                        listeners.forEach(ls -> ls.userInvited(room, sender, invited));
+                        listeners.forEach(ls -> {
+                            try {
+                                ls.userInvited(room, sender, invited);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        });
                     }
                     default -> {}
                 }
             }
+            default -> {}
+        }
+    }
+
+    private void handleRoomEvent(String roomId, ClientEvent event) {
+        User sender = new User(this, event.sender());
+        if (sender.isSelf()) return;
+        Room room = new Room(this, roomId);
+        switch (event.type()) {
             case Room.M_ROOM_MESSAGE -> {
                 JsonObject content = event.content();
                 String msgtype = content.get("msgtype").getAsString();
@@ -136,7 +151,7 @@ public class MatrixClient {
                         response.rooms().join().forEach((roomId, join) -> join.timeline().events()
                                 .forEach(event -> handleRoomEvent(roomId, event)));
                         response.rooms().invite().forEach((roomId, invite) -> invite.state().events()
-                                .forEach(event -> handleRoomEvent(roomId, event)));
+                                .forEach(event -> handleInviteEvent(roomId, event)));
                     }
                     syncSince = response.nextBatch();
                 } catch (Exception e) {
@@ -149,7 +164,7 @@ public class MatrixClient {
     }
 
     private String whoami() throws IOException {
-        return client.makeRequest("/client/v3/account/whoami", null, JsonObject.class, HTTPMethod.GET).get("user_id")
+        return client.makeRequest("/account/whoami", null, JsonObject.class, HTTPMethod.GET).get("user_id")
                 .getAsString();
     }
 }

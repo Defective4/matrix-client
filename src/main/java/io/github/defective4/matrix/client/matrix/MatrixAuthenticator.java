@@ -17,6 +17,6 @@ public class MatrixAuthenticator {
     }
 
     public AuthResponse login(LoginRequest request) throws MalformedURLException, IOException {
-        return client.makeRequest("/client/v3/login", request, AuthResponse.class, HTTPMethod.POST);
+        return client.makeRequest("/login", request, AuthResponse.class, HTTPMethod.POST);
     }
 }

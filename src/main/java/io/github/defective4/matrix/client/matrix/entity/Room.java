@@ -24,6 +24,11 @@ public class Room extends Entity {
         return id;
     }
 
+    public void join() throws IOException {
+        client.makeRequest("/rooms/%s/join".formatted(getURLEncodedID()), new JsonVoid(), JsonVoid.class,
+                HTTPMethod.POST);
+    }
+
     public void sendMessage(Message message) throws IOException {
         sendRoomEvent(M_ROOM_MESSAGE, message);
     }
@@ -33,14 +38,17 @@ public class Room extends Entity {
     }
 
     public void sendRoomEvent(String eventType, Object event) throws IOException {
-        String url = "/client/v3/rooms/%s/send/%s/%s".formatted(URLEncoder.encode(id, StandardCharsets.UTF_8),
-                eventType, client.getRandom().nextLong());
+        String url = "/rooms/%s/send/%s/%s".formatted(getURLEncodedID(), eventType, client.getRandom().nextLong());
         client.makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
     }
 
     @Override
     public String toString() {
         return "Room [id=" + id + "]";
+    }
+
+    private String getURLEncodedID() {
+        return URLEncoder.encode(id, StandardCharsets.UTF_8);
     }
 
 }

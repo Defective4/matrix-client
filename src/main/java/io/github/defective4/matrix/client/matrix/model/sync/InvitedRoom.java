@@ -1,4 +1,4 @@
-package io.github.defective4.matrix.client.matrix.model;
+package io.github.defective4.matrix.client.matrix.model.sync;
 
 import com.google.gson.annotations.SerializedName;
 
