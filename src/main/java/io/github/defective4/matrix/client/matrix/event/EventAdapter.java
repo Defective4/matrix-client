@@ -9,4 +9,7 @@ public abstract class EventAdapter implements EventListener {
     @Override
     public void messageReceived(User sender, Room room, Message message) {}
 
+    @Override
+    public void userInvited(Room room, User sender, User invited) {}
+
 }

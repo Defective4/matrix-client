@@ -11,6 +11,7 @@ import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.model.JsonVoid;
 
 public class Room extends Entity {
+    public static final String M_ROOM_MEMBER = "m.room.member";
     public static final String M_ROOM_MESSAGE = "m.room.message";
     private final String id;
 

@@ -23,8 +23,9 @@ import io.github.defective4.matrix.client.matrix.entity.Room;
 import io.github.defective4.matrix.client.matrix.entity.message.Message;
 import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
+import io.github.defective4.matrix.client.matrix.event.ClientEvent;
 import io.github.defective4.matrix.client.matrix.event.EventListener;
-import io.github.defective4.matrix.client.matrix.model.ClientEvent;
+import io.github.defective4.matrix.client.matrix.event.MemberEvent;
 import io.github.defective4.matrix.client.matrix.model.SyncResponse;
 
 public class MatrixClient {
@@ -93,8 +94,19 @@ public class MatrixClient {
 
     private void handleRoomEvent(String roomId, ClientEvent event) {
         User sender = new User(this, event.sender());
+        if (sender.getId().equals(selfUser.getId())) return;
         Room room = new Room(this, roomId);
         switch (event.type()) {
+            case Room.M_ROOM_MEMBER -> {
+                MemberEvent memberEvent = event.getContentAs(MemberEvent.class, client.getGson());
+                switch (memberEvent.membership()) {
+                    case MemberEvent.INVITE -> {
+                        User invited = new User(this, event.stateKey());
+                        listeners.forEach(ls -> ls.userInvited(room, sender, invited));
+                    }
+                    default -> {}
+                }
+            }
             case Room.M_ROOM_MESSAGE -> {
                 JsonObject content = event.content();
                 String msgtype = content.get("msgtype").getAsString();
