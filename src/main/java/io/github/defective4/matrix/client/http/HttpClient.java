@@ -37,8 +37,7 @@ public class HttpClient {
         return gson;
     }
 
-    public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method)
-            throws MalformedURLException, IOException {
+    public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method) throws IOException {
         return makeRequest(path, body, type, method, null);
     }
 

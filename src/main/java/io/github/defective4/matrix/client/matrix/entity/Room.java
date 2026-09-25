@@ -44,6 +44,13 @@ public class Room extends Entity {
                 HTTPMethod.POST);
     }
 
+    public void leave(String reason) throws IOException {
+        JsonObject root = new JsonObject();
+        if (reason != null) root.addProperty("reason", reason);
+        client.getHttpClient().makeRequest("/rooms/%s/leave".formatted(getURLEncodedID()), root, JsonVoid.class,
+                HTTPMethod.POST);
+    }
+
     public void react(ClientEvent event, String emoji) throws IOException {
         JsonObject root = new JsonObject();
         root.add(EventRelationship.KEY, client.getHttpClient().getGson()
