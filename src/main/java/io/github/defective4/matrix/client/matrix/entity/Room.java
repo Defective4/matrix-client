@@ -54,7 +54,7 @@ public class Room extends Entity {
     public void react(ClientEvent event, String emoji) throws IOException {
         JsonObject root = new JsonObject();
         root.add(EventRelationship.KEY, client.getHttpClient().getGson()
-                .toJsonTree(new EventRelationship(event.getEventId(), emoji, EventRelationship.REL_TYPE_ANNOTATION)));
+                .toJsonTree(new EventRelationship(event.getEventId(), emoji, EventRelationship.M_ANNOTATION)));
         sendRoomEvent(EventRelationship.M_REACTION, root);
     }
 

@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import com.google.gson.JsonObject;
 
 import io.github.defective4.matrix.client.http.HTTPMethod;
+import io.github.defective4.matrix.client.matrix.entity.EventRelationship;
 import io.github.defective4.matrix.client.matrix.entity.Room;
 import io.github.defective4.matrix.client.matrix.entity.message.Message;
 import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
@@ -20,6 +21,7 @@ import io.github.defective4.matrix.client.matrix.entity.user.User;
 import io.github.defective4.matrix.client.matrix.event.ClientEvent;
 import io.github.defective4.matrix.client.matrix.event.MemberEvent;
 import io.github.defective4.matrix.client.matrix.event.MessageEvent;
+import io.github.defective4.matrix.client.matrix.event.RoomEvent;
 import io.github.defective4.matrix.client.matrix.event.listener.EventListener;
 import io.github.defective4.matrix.client.matrix.model.response.SyncResponse;
 
@@ -51,8 +53,8 @@ public class MatrixSynchronizer {
                 : "full_state=false&since=%s".formatted(URLEncoder.encode(since, StandardCharsets.UTF_8));
         JsonObject obj = matrixClient.makeRequest("/sync?%s&timeout=%s".formatted(stateQuery, syncInterval * 1000),
                 null, JsonObject.class, HTTPMethod.GET, con -> con.setReadTimeout(Integer.MAX_VALUE));
-        // System.out.println(obj);
-        // System.err.println();
+//         System.out.println(obj);
+//         System.err.println();
         return matrixClient.client.getGson().fromJson(obj, SyncResponse.class);
     }
 
@@ -80,6 +82,14 @@ public class MatrixSynchronizer {
         if (sender.isSelf()) return;
         Room room = new Room(client, roomId);
         switch (event.getType()) {
+            case EventRelationship.M_REACTION -> {
+                EventRelationship relationship = client.getHttpClient().getGson()
+                        .fromJson(event.getContent().get("m.relates_to"), EventRelationship.class);
+                if (relationship.relType().equals(EventRelationship.M_ANNOTATION)) {
+                    RoomEvent roomEvent = new RoomEvent(event, room, client);
+                    listeners.forEach(ls -> ls.reactionAdded(roomEvent, relationship));
+                }
+            }
             case Room.M_ROOM_MESSAGE -> {
                 JsonObject content = event.getContent();
                 String msgtype = content.get("msgtype").getAsString();
