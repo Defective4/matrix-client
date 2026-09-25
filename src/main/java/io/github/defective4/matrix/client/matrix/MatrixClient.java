@@ -18,7 +18,7 @@ import io.github.defective4.matrix.client.matrix.event.listener.EventListener;
 import io.github.defective4.matrix.client.matrix.model.request.CreateRoomRequest;
 
 public class MatrixClient {
-    final HttpClient client;
+    private final HttpClient client;
     private boolean connected;
     private final Random random = new Random();
     private User selfUser;

@@ -1,6 +1,13 @@
 package io.github.defective4.matrix.client.matrix.entity.message;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+
 import com.google.gson.annotations.SerializedName;
+
+import io.github.defective4.matrix.client.matrix.MatrixClient;
 
 public class MediaMessage extends Message {
 
@@ -44,8 +51,8 @@ public class MediaMessage extends Message {
 
     }
 
+    public static final String TYPE_FILE = "m.file";
     public static final String TYPE_IMAGE = "m.image";
-
     public static final String TYPE_VIDEO = "m.video";
 
     private final String filename;
@@ -65,6 +72,13 @@ public class MediaMessage extends Message {
 
     public MediaInfo getInfo() {
         return info;
+    }
+
+    public InputStream getMediaStream(MatrixClient client) throws IOException {
+        URI uri = URI.create(url);
+        HttpURLConnection con = client.getHttpClient()
+                .prepareConnection("/_matrix/client/v1/media/download/" + uri.getHost() + uri.getPath());
+        return con.getInputStream();
     }
 
     public String getUrl() {

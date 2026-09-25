@@ -81,6 +81,14 @@ public class Room extends Entity {
         client.makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
     }
 
+    public void setTyping(boolean typing, long timeout) throws IOException {
+        JsonObject root = new JsonObject();
+        root.addProperty("typing", typing);
+        root.addProperty("timeout", timeout);
+        client.makeRequest("/rooms/%s/typing/%s".formatted(getURLEncodedID(), client.getSelfUser().getId()), root,
+                JsonVoid.class, HTTPMethod.PUT);
+    }
+
     @Override
     public String toString() {
         return "Room [id=" + id + "]";

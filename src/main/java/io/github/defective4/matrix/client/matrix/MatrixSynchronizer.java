@@ -56,7 +56,7 @@ public class MatrixSynchronizer {
                 null, JsonObject.class, HTTPMethod.GET, con -> con.setReadTimeout(Integer.MAX_VALUE));
 //        System.out.println(obj);
 //        System.err.println();
-        return matrixClient.client.getGson().fromJson(obj, SyncResponse.class);
+        return matrixClient.getHttpClient().getGson().fromJson(obj, SyncResponse.class);
     }
 
     void handleInviteEvent(String roomId, ClientEvent event) {
@@ -96,7 +96,7 @@ public class MatrixSynchronizer {
                 String msgtype = content.get("msgtype").getAsString();
                 Class<? extends Message> messageClass = switch (msgtype) {
                     case TextMessage.TYPE -> TextMessage.class;
-                    case MediaMessage.TYPE_IMAGE, MediaMessage.TYPE_VIDEO -> MediaMessage.class;
+                    case MediaMessage.TYPE_IMAGE, MediaMessage.TYPE_VIDEO, MediaMessage.TYPE_FILE -> MediaMessage.class;
                     default -> Message.class;
                 };
                 Message message = event.getContentAs(messageClass, client.getHttpClient().getGson());

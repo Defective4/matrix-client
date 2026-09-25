@@ -33,6 +33,10 @@ public class HttpClient {
         this.token = token;
     }
 
+    public String getBaseURL() {
+        return baseURL;
+    }
+
     public Gson getGson() {
         return gson;
     }
@@ -43,14 +47,11 @@ public class HttpClient {
 
     public <T> T makeRequest(String path, Object body, Class<T> type, HTTPMethod method,
             Consumer<HttpURLConnection> connectionModifier) throws MalformedURLException, IOException {
-        HttpURLConnection connection = (HttpURLConnection) URI.create(baseURL + "/_matrix/client/v3" + path).toURL()
-                .openConnection();
+        HttpURLConnection connection = prepareConnection("/_matrix/client/v3" + path);
         if (connectionModifier != null) connectionModifier.accept(connection);
         try {
             connection.setRequestMethod(method.name());
-            if (token != null) {
-                connection.setRequestProperty("Authorization", "Bearer %s".formatted(new String(token)));
-            }
+
             if (method != HTTPMethod.GET) {
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setDoOutput(true);
@@ -66,6 +67,14 @@ public class HttpClient {
         } finally {
             connection.disconnect();
         }
+    }
+
+    public HttpURLConnection prepareConnection(String path) throws IOException, MalformedURLException {
+        HttpURLConnection connection = (HttpURLConnection) URI.create(baseURL + path).toURL().openConnection();
+        if (token != null) {
+            connection.setRequestProperty("Authorization", "Bearer %s".formatted(new String(token)));
+        }
+        return connection;
     }
 
 }
