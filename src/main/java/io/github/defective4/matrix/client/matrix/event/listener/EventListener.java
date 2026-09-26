@@ -13,5 +13,7 @@ public interface EventListener {
 
     void userInvited(Room room, User sender, User invited);
 
+    void userJoined(RoomEvent event, User user);
+
     void userLeft(RoomEvent event, User user);
 }

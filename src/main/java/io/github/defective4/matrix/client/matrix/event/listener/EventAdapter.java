@@ -18,6 +18,9 @@ public abstract class EventAdapter implements EventListener {
     public void userInvited(Room room, User sender, User invited) {}
 
     @Override
+    public void userJoined(RoomEvent event, User user) {}
+
+    @Override
     public void userLeft(RoomEvent event, User user) {}
 
 }
