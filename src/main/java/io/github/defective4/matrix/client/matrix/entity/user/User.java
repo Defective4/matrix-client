@@ -34,10 +34,6 @@ public class User extends Entity {
         return id;
     }
 
-    public void inviteToRoom(Room room, String reason) throws IOException {
-        room.invite(this, reason);
-    }
-
     public boolean isSelf() {
         return this == client.getSelfUser() || id.equals(client.getSelfUser().id);
     }

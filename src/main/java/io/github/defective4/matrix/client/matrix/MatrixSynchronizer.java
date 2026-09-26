@@ -93,6 +93,7 @@ public class MatrixSynchronizer {
             }
             case Room.M_ROOM_MEMBER -> {
                 User subject = new User(client, event.getStateKey());
+                if (subject.isSelf()) break;
                 RoomEvent roomEvent = new RoomEvent(event, room, client);
                 switch (event.getContentAs(MemberEvent.class, client.getHttpClient().getGson()).membership()) {
                     case MemberEvent.LEAVE -> listeners.forEach(ls -> ls.userLeft(roomEvent, subject));
