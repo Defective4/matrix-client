@@ -12,4 +12,6 @@ public interface EventListener {
     void reactionAdded(RoomEvent roomEvent, EventRelationship relationship);
 
     void userInvited(Room room, User sender, User invited);
+
+    void userLeft(RoomEvent event, User user);
 }

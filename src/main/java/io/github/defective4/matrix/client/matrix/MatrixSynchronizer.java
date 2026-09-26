@@ -91,6 +91,14 @@ public class MatrixSynchronizer {
                     listeners.forEach(ls -> ls.reactionAdded(roomEvent, relationship));
                 }
             }
+            case Room.M_ROOM_MEMBER -> {
+                User subject = new User(client, event.getStateKey());
+                RoomEvent roomEvent = new RoomEvent(event, room, client);
+                switch (event.getContentAs(MemberEvent.class, client.getHttpClient().getGson()).membership()) {
+                    case MemberEvent.LEAVE -> listeners.forEach(ls -> ls.userLeft(roomEvent, subject));
+                    default -> {}
+                }
+            }
             case Room.M_ROOM_MESSAGE -> {
                 JsonObject content = event.getContent();
                 String msgtype = content.get("msgtype").getAsString();
