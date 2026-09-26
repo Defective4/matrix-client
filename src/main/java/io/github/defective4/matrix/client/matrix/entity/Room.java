@@ -13,6 +13,7 @@ import io.github.defective4.matrix.client.matrix.entity.message.TextMessage;
 import io.github.defective4.matrix.client.matrix.entity.user.User;
 import io.github.defective4.matrix.client.matrix.event.ClientEvent;
 import io.github.defective4.matrix.client.matrix.model.JsonVoid;
+import io.github.defective4.matrix.client.matrix.model.PowerLevels;
 import io.github.defective4.matrix.client.matrix.model.request.RoomRequest;
 
 public class Room extends Entity {
@@ -22,7 +23,9 @@ public class Room extends Entity {
     }
 
     public static final String M_ROOM_MEMBER = "m.room.member";
+
     public static final String M_ROOM_MESSAGE = "m.room.message";
+    private static final String M_ROOM_POWER_LEVELS = "m.room.power_levels";
     private final String id;
 
     public Room(MatrixClient client, String id) {
@@ -76,9 +79,8 @@ public class Room extends Entity {
         sendMessage(new TextMessage(message));
     }
 
-    public void sendRoomEvent(String eventType, Object event) throws IOException {
-        String url = "/rooms/%s/send/%s/%s".formatted(getURLEncodedID(), eventType, client.getRandom().nextLong());
-        client.makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
+    public void setPowerLevels(PowerLevels levels) throws IOException {
+        setRoomState(M_ROOM_POWER_LEVELS, levels);
     }
 
     public void setTyping(boolean typing, long timeout) throws IOException {
@@ -101,6 +103,16 @@ public class Room extends Entity {
 
     private String getURLEncodedID() {
         return URLEncoder.encode(id, StandardCharsets.UTF_8);
+    }
+
+    private void sendRoomEvent(String eventType, Object event) throws IOException {
+        String url = "/rooms/%s/send/%s/%s".formatted(getURLEncodedID(), eventType, client.getRandom().nextLong());
+        client.makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
+    }
+
+    private void setRoomState(String stateType, Object event) throws IOException {
+        String url = "/rooms/%s/state/%s".formatted(getURLEncodedID(), stateType);
+        client.makeRequest(url, event, JsonVoid.class, HTTPMethod.PUT);
     }
 
 }
